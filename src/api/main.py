@@ -21,6 +21,13 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+from fastapi.responses import FileResponse
+
+@app.get("/dashboard", response_class=FileResponse)
+def dashboard():
+    """Dashboard UI."""
+    return FileResponse(os.path.join(os.path.dirname(os.path.abspath(__file__)), "dashboard.html"))
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

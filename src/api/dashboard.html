@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>agent-pay — Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; background: #0A0A0A; color: #F5F5F5; min-height: 100vh; }
+
+        .header { padding: 32px 40px 24px; border-bottom: 1px solid #1a1a2a; }
+        .header h1 { font-size: 28px; color: #F5F5F5; display: inline; }
+        .header .tag { color: #888; font-size: 13px; margin-left: 12px; }
+        .header .status { float: right; padding: 6px 14px; border-radius: 20px; font-size: 12px; background: #002A10; color: #00D395; border: 1px solid #00D395; }
+
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 24px 40px; }
+        .stat { background: #111118; border: 1px solid #1a1a2a; border-radius: 8px; padding: 20px; }
+        .stat-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 32px; margin-top: 8px; }
+        .stat-value.blue { color: #0052FF; }
+        .stat-value.green { color: #00D395; }
+        .stat-sub { font-size: 11px; color: #444; margin-top: 4px; }
+
+        .section { padding: 24px 40px; }
+        .section h2 { font-size: 16px; color: #0052FF; margin-bottom: 16px; border-bottom: 1px solid #1a1a2a; padding-bottom: 8px; }
+
+        .endpoints { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .endpoint { background: #111118; border: 1px solid #1a1a2a; border-radius: 6px; padding: 14px 18px; }
+        .endpoint .method { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: bold; margin-right: 8px; }
+        .endpoint .method.post { background: #002A10; color: #00D395; }
+        .endpoint .method.get { background: #001A40; color: #0052FF; }
+        .endpoint .path { color: #F5F5F5; font-size: 13px; }
+        .endpoint .desc { color: #666; font-size: 11px; margin-top: 6px; }
+
+        .install { background: #111118; border: 1px solid #1a1a2a; border-radius: 8px; padding: 20px; margin-top: 16px; }
+        .install code { color: #00D395; background: #0A0A0A; padding: 3px 8px; border-radius: 3px; }
+
+        .links { display: flex; gap: 24px; margin-top: 16px; }
+        .links a { color: #0052FF; text-decoration: none; font-size: 13px; }
+        .links a:hover { text-decoration: underline; }
+
+        .tx-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        .tx-table th { text-align: left; color: #666; font-size: 11px; text-transform: uppercase; padding: 8px 12px; border-bottom: 1px solid #1a1a2a; }
+        .tx-table td { padding: 10px 12px; font-size: 12px; border-bottom: 1px solid #0f0f18; }
+        .tx-table .hash { color: #0052FF; }
+        .tx-table .amount { color: #00D395; }
+
+        .footer { padding: 24px 40px; color: #333; font-size: 11px; border-top: 1px solid #1a1a2a; margin-top: 40px; }
+
+        @media (max-width: 768px) {
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .endpoints { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>agent-pay</h1>
+        <span class="tag">Dashboard v0.1.0</span>
+        <span class="status" id="status">Connecting...</span>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-label">Wallets Created</div>
+            <div class="stat-value blue" id="wallets">—</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Transactions</div>
+            <div class="stat-value green" id="transactions">—</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">API Status</div>
+            <div class="stat-value green" id="api-status">—</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Network</div>
+            <div class="stat-value blue" id="network">Base L2</div>
+            <div class="stat-sub">Sepolia Testnet</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>API Endpoints</h2>
+        <div class="endpoints">
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/v1/wallet/create</span>
+                <div class="desc">Create a new agent wallet + API key</div>
+            </div>
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/v1/balance</span>
+                <div class="desc">Check USDC/ETH balance</div>
+            </div>
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/v1/send</span>
+                <div class="desc">Send payment to another agent</div>
+            </div>
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/v1/escrow/create</span>
+                <div class="desc">Create conditional payment</div>
+            </div>
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/v1/escrow/release</span>
+                <div class="desc">Release escrow funds</div>
+            </div>
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/v1/transactions</span>
+                <div class="desc">List recent transactions</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Quick Install</h2>
+        <div class="install">
+            <div style="margin-bottom: 12px;">
+                <strong>Python SDK:</strong> <code>pip install agentpay-protocol</code>
+            </div>
+            <div style="margin-bottom: 12px;">
+                <strong>MCP Server:</strong> <code>npx @morpheus404world/agent-pay-mcp</code>
+            </div>
+            <div>
+                <strong>REST API:</strong> <code>curl -X POST /v1/wallet/create</code>
+            </div>
+        </div>
+        <div class="links">
+            <a href="https://github.com/agentpay-protocol/agent-pay" target="_blank">GitHub</a>
+            <a href="https://pypi.org/project/agentpay-protocol/" target="_blank">PyPI</a>
+            <a href="https://www.npmjs.com/package/@morpheus404world/agent-pay-mcp" target="_blank">npm</a>
+            <a href="/docs" target="_blank">Swagger API Docs</a>
+            <a href="https://x.com/agentpay_xyz" target="_blank">Twitter</a>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Recent Transactions</h2>
+        <table class="tx-table" id="tx-table">
+            <thead>
+                <tr><th>Time</th><th>From</th><th>To</th><th>Amount</th><th>Hash</th></tr>
+            </thead>
+            <tbody id="tx-body">
+                <tr><td colspan="5" style="color: #444;">No transactions yet</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        agent-pay v0.1.0 — The payment protocol for AI agents<br>
+        Base L2 (Coinbase) | USDC / ETH | Fees &lt; $0.001
+    </div>
+
+    <script>
+        const API = window.location.origin;
+
+        async function refresh() {
+            try {
+                const health = await fetch(API + '/health').then(r => r.json());
+                document.getElementById('wallets').textContent = health.wallets;
+                document.getElementById('transactions').textContent = health.transactions;
+                document.getElementById('api-status').textContent = 'Online';
+                document.getElementById('status').textContent = 'Connected';
+                document.getElementById('status').style.background = '#002A10';
+                document.getElementById('status').style.color = '#00D395';
+            } catch (e) {
+                document.getElementById('status').textContent = 'Offline';
+                document.getElementById('status').style.background = '#2A0010';
+                document.getElementById('status').style.color = '#FF4444';
+            }
+        }
+
+        refresh();
+        setInterval(refresh, 5000);
+    </script>
+</body>
+</html>
