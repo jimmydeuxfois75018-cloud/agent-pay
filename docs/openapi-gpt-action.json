@@ -1,0 +1,162 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "agent-pay",
+    "description": "Payment protocol for AI agents. Send and receive USDC/ETH on Base L2.",
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://YOUR_SERVER/v1",
+      "description": "agent-pay API"
+    }
+  ],
+  "paths": {
+    "/wallet/create": {
+      "post": {
+        "operationId": "createWallet",
+        "summary": "Create a new agent wallet",
+        "description": "Creates a new crypto wallet for an AI agent and returns an API key for future requests.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "testnet": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Use Base Sepolia testnet (true) or mainnet (false)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Wallet created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "api_key": {"type": "string"},
+                    "address": {"type": "string"},
+                    "network": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/balance": {
+      "get": {
+        "operationId": "getBalance",
+        "summary": "Check wallet balance",
+        "description": "Returns USDC and ETH balance for the authenticated agent wallet.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {"type": "string"},
+            "description": "Bearer API_KEY"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Balance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "address": {"type": "string"},
+                    "USDC": {"type": "string"},
+                    "ETH": {"type": "string"},
+                    "network": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/send": {
+      "post": {
+        "operationId": "sendPayment",
+        "summary": "Send a payment",
+        "description": "Send USDC or ETH to another agent or wallet address on Base L2.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {"type": "string"}
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["to", "amount"],
+                "properties": {
+                  "to": {"type": "string", "description": "Recipient address (0x...)"},
+                  "amount": {"type": "number", "description": "Amount (e.g. 0.50)"},
+                  "currency": {"type": "string", "enum": ["USDC", "ETH"], "default": "USDC"},
+                  "memo": {"type": "string", "default": ""}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {"type": "string"},
+                    "hash": {"type": "string"},
+                    "explorer": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/info": {
+      "get": {
+        "operationId": "getInfo",
+        "summary": "Protocol info",
+        "description": "Public information about this agent-pay node.",
+        "responses": {
+          "200": {
+            "description": "Info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "protocol": {"type": "string"},
+                    "version": {"type": "string"},
+                    "supported_currencies": {"type": "array", "items": {"type": "string"}}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
