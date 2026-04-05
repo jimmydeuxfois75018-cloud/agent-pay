@@ -1,5 +1,5 @@
 {
-  "name": "agent-pay-mcp",
+  "name": "@morpheus404world/agent-pay-mcp",
   "version": "0.1.0",
   "description": "MCP server that enables AI agents to send and receive crypto payments (USDC/ETH on Base L2)",
   "type": "module",
