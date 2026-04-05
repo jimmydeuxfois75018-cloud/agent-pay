@@ -19,7 +19,7 @@ import os
 TELEGRAM_TOKEN = "8685866733:AAEhP42Qc5i-_Yw5MOfYwuXRmqOpbphILhg"
 TELEGRAM_CHAT = "5047076645"
 CHECK_INTERVAL = 300  # 5 minutes
-STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".watch_state.json")
+STATE_FILE = r"C:\Users\Administrateur\agent-pay\scripts\.watch_state.json"
 
 
 def fetch_json(url):
@@ -81,9 +81,11 @@ def main():
     print(f"Telegram: {TELEGRAM_CHAT}")
     print("=" * 40)
 
-    send_telegram("NEO Watcher: Monitoring demarre. Je te ping a chaque star, fork, ou download.")
-
     state = load_state()
+
+    # Only send startup message if state is empty (first run ever)
+    if not state:
+        send_telegram("NEO Watcher: Monitoring demarre. Je te ping a chaque star, fork, ou download.")
 
     while True:
         try:
