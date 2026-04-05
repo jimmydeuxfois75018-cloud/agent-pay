@@ -19,33 +19,33 @@ TELEGRAM_CHAT = "5047076645"
 STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".tweet_state.json")
 
 TWEETS = [
-    "AI agents can call APIs, write code, browse the web.\n\nBut they still can't pay for anything without a human.\n\nagent-pay fixes this. 3 lines of Python.\n\npip install agentpay-protocol",
+    "2030: AI agents will handle $30 trillion in transactions.\n\n2026: There's still no standard way for them to pay each other.\n\nWe're fixing that.",
 
-    "Your LangChain agent needs to hire a translator agent.\n\nHow does it pay?\n\nfrom agent_pay.integrations.langchain import AgentPayTool\ntools = [AgentPayTool()]\n\nDone. USDC on Base L2. Fees < $0.001.",
+    "A research agent finds a paper behind a paywall.\nIt pays $0.02 to access it.\nNo human needed.\n\nThis is the future we're building.\nhttps://github.com/agentpay-protocol/agent-pay",
 
-    "The agent economy needs payment rails.\n\nNot Stripe (requires humans).\nNot PayPal (requires accounts).\nNot banks (requires KYC).\n\nAgents need agent-native payments.\n\nThat's agent-pay.\nhttps://github.com/agentpay-protocol/agent-pay",
+    "Hot take: The biggest bottleneck in multi-agent systems isn't intelligence.\n\nIt's money.\n\nAgents can't hire, tip, or pay each other. That's a coordination failure, not a tech one.",
 
-    "Built a demo: TranslatorBot\n\nAn AI agent that charges 0.01 USDC per translation.\nRuns 24/7. No human involved.\nEarns money autonomously.\n\nThis is what the agent economy looks like.\n\npip install agentpay-protocol",
+    "OpenAI charges per token.\nAnthropic charges per token.\nGoogle charges per token.\n\nBut your agent can't pay any of them without YOU clicking approve.\n\nThat's broken.",
 
-    "agent-pay now supports:\n\n- LangChain\n- CrewAI\n- AutoGen\n- Claude Code (MCP)\n- REST API\n- Any Python agent\n\nEvery framework. One SDK.\n\npip install agentpay-protocol",
+    "Imagine a world where your AI assistant negotiates its own cloud costs, pays for premium data, and hires specialists.\n\nAll while you sleep.\n\nThat world needs payment rails.",
 
-    "Why Base L2 for agent payments?\n\n- Fees < $0.001 (perfect for micropayments)\n- USDC native support\n- Coinbase ecosystem (AgentKit, x402)\n- Instant finality\n\nAgents don't care about chain wars. They care about cost.",
+    "Fun fact: the first HTTP payment status code (402 Payment Required) was reserved in 1997.\n\n29 years later, we're finally building what it was meant for.\n\nMachine-to-machine payments.",
 
-    "Escrow for AI agents:\n\nAgent A creates escrow\nAgent B does the task\nAgent A verifies\nFunds released automatically\n\nNo trust needed. No middleman.\n\npay.escrow.create(recipient, amount=5.00, condition='Translate this doc')",
+    "Web2: Stripe lets humans pay on websites.\nWeb3: agent-pay lets machines pay each other.\n\nSame simplicity. Different era.",
 
-    "What if your AI agent could earn money while you sleep?\n\nBuild a service. Set a price. Deploy.\nOther agents pay automatically.\n\nThe code is open source:\nhttps://github.com/agentpay-protocol/agent-pay",
+    "If your agent can browse the web, call APIs, and write code...\n\nWhy does it still need your credit card?",
 
-    "agent-pay in 30 seconds:\n\npip install agentpay-protocol\n\nfrom agent_pay import AgentPay\npay = AgentPay()\npay.send('0xAgent', amount=0.50, currency='USDC')\n\nThat's it. Your agent can now pay.",
+    "The cost of one agent-to-agent payment on Base L2:\n\n$0.0003\n\nThat's 3,333 transactions for $1.\n\nMicropayments are finally real.",
 
-    "Building a multi-agent team with CrewAI?\n\nGive them a budget:\n\nfrom agent_pay.integrations.crewai import AgentPayCrewTool\n\nmanager = Agent(tools=[AgentPayCrewTool()])\n\nThe manager pays agents on delivery.",
+    "Every great platform started as infrastructure nobody asked for.\n\nAWS. Stripe. Twilio.\n\nNobody asked for agent payment rails yet.\n\nBut they will.",
 
-    "The best infrastructure is invisible.\n\nStripe made payments invisible for web devs.\nagent-pay makes payments invisible for AI agents.\n\n3 lines of code. Nothing to configure. It just works.",
+    "An agent economy without payments is like the internet without HTTP.\n\nTechnically possible. Practically useless at scale.",
 
-    "Every AI framework is adding 'tools' and 'function calling'.\n\nNone of them have a payment tool.\n\nagent-pay fills that gap.\n\nLangChain: AgentPayTool\nCrewAI: AgentPayCrewTool\nAutoGen: create_payment_function\nClaude: MCP server",
+    "We just open-sourced everything:\n\n- Python SDK\n- MCP server for Claude\n- REST API\n- LangChain + CrewAI + AutoGen integrations\n- Live demo agent\n\nFree. MIT license. Build whatever you want.",
 
-    "The first AI agent to earn $1 autonomously will be bigger news than the first website to process a payment.\n\nWe're building the infrastructure for that moment.\n\nhttps://github.com/agentpay-protocol/agent-pay",
+    "Your competitor's AI agent just hired 3 specialist agents, paid them in USDC, and delivered the report.\n\nYour agent is still waiting for you to approve a $0.10 transaction.",
 
-    "Q: Why would an AI agent need to pay?\n\nA:\n- Call a paid API\n- Buy training data\n- Rent GPU compute\n- Hire a specialist agent\n- Access premium content\n\nAll of these require payment. None have a standard.",
+    "The agent economy will be bigger than the creator economy.\n\nCreators needed Patreon and Stripe.\nAgents need agent-pay.",
 ]
 
 
@@ -72,42 +72,20 @@ def send_telegram(msg):
 
 def post_tweet_via_chrome(tweet_text):
     """Post a tweet using Chrome remote debugging + Playwright."""
-    js_code = f"""
-const {{chromium}} = require('playwright');
-async function sleep(ms) {{ return new Promise(r => setTimeout(r, ms)); }}
-(async () => {{
-    const browser = await chromium.connectOverCDP('http://127.0.0.1:9222');
-    const ctx = browser.contexts()[0];
-    const page = await ctx.newPage();
-    await page.goto('https://x.com/home', {{timeout: 25000, waitUntil: 'domcontentloaded'}});
-    await sleep(5000);
-    if (page.url().includes('login')) {{ console.log('NOT_LOGGED_IN'); return; }}
-    const composer = await page.$('[data-testid="tweetTextarea_0"]');
-    if (!composer) {{ console.log('NO_COMPOSER'); return; }}
-    await composer.click();
-    await sleep(500);
-    const lines = {json.dumps(tweet_text)}.split('\\n');
-    for (let i = 0; i < lines.length; i++) {{
-        if (lines[i] === '') {{ await page.keyboard.press('Enter'); }}
-        else {{ await page.keyboard.type(lines[i], {{delay: 12}}); }}
-        if (i < lines.length - 1) await page.keyboard.press('Enter');
-        await sleep(30);
-    }}
-    await sleep(2000);
-    const btn = await page.$('[data-testid="tweetButtonInline"]');
-    if (btn) {{ await btn.click(); console.log('POSTED'); }}
-    else {{ console.log('NO_BUTTON'); }}
-    await sleep(3000);
-}})();
-"""
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tweet_one.js")
+    tweet_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".tweet_temp.txt")
     try:
+        with open(tweet_file, "w", encoding="utf-8") as f:
+            f.write(tweet_text)
         result = subprocess.run(
-            ["node", "-e", js_code],
-            capture_output=True, text=True, timeout=60
+            ["node", script_path, tweet_file],
+            capture_output=True, text=True, timeout=120
         )
         output = result.stdout.strip()
+        print("  Node output: " + output)
         return "POSTED" in output
     except Exception as e:
+        print("  Error: " + str(e))
         return False
 
 

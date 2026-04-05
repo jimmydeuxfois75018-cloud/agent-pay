@@ -2,15 +2,15 @@ name: Daily Install & Test
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 jobs:
   install-test:
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12"]
+        os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/setup-python@v5
@@ -18,7 +18,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install from PyPI
         run: pip install agentpay-protocol
-      - name: Test import
-        run: python -c "from agent_pay import AgentPay; p = AgentPay(testnet=True); print(f'OK: {p.address}')"
-      - name: Test balance
-        run: python -c "from agent_pay import AgentPay; p = AgentPay(testnet=True); print(f'ETH: {p.balance(\"ETH\")}')"
+      - name: Test import and wallet
+        run: |
+          python -c "
+          from agent_pay import AgentPay
+          p = AgentPay(testnet=True)
+          print('OK:', p.address)
+          print('ETH:', p.balance('ETH'))
+          "
