@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agentpay-protocol"
-version = "0.1.0"
+version = "0.1.1"
 description = "The payment protocol for AI agents. Let any AI agent send and receive crypto payments in 3 lines of code."
 readme = "README.md"
 license = {text = "MIT"}
@@ -47,7 +47,4 @@ Issues = "https://github.com/agent-pay/agent-pay/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["sdk*"]
-
-[tool.setuptools.package-dir]
-agent_pay = "src/sdk"
+include = ["agent_pay*"]

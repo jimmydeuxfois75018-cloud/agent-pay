@@ -137,7 +137,7 @@ def create_wallet(req: CreateWalletRequest):
     """Create a new agent wallet. Returns an API key for all future requests."""
     import sys
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-    from sdk.client import AgentPay
+    from agent_pay.client import AgentPay
 
     pay = AgentPay(testnet=req.testnet)
 
@@ -166,7 +166,7 @@ def get_balance(auth: dict = Depends(get_api_key)):
     """Check wallet balance (USDC and ETH)."""
     import sys
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-    from sdk.client import AgentPay
+    from agent_pay.client import AgentPay
 
     pay = AgentPay(private_key=auth["private_key"], testnet=auth.get("testnet", True))
 
@@ -191,7 +191,7 @@ def send_payment(req: SendRequest, auth: dict = Depends(get_api_key)):
     """Send a payment to another agent or address."""
     import sys
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-    from sdk.client import AgentPay
+    from agent_pay.client import AgentPay
 
     pay = AgentPay(private_key=auth["private_key"], testnet=auth.get("testnet", True))
 
@@ -223,7 +223,7 @@ def create_escrow(req: EscrowCreateRequest, auth: dict = Depends(get_api_key)):
     """Create an escrow. Funds are held until released or timeout."""
     import sys
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-    from sdk.client import AgentPay
+    from agent_pay.client import AgentPay
 
     pay = AgentPay(private_key=auth["private_key"], testnet=auth.get("testnet", True))
 
@@ -258,7 +258,7 @@ def release_escrow(req: EscrowReleaseRequest, auth: dict = Depends(get_api_key))
     """Release escrowed funds to the recipient."""
     import sys
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-    from sdk.client import AgentPay
+    from agent_pay.client import AgentPay
 
     escrow_meta = ESCROWS.get(req.escrow_id)
     if not escrow_meta:
