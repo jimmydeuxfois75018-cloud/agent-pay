@@ -35,26 +35,30 @@ const SEARCH_QUERIES = [
     'AI agent tool',
 ];
 
-// Smart reply templates — rotated and adapted to context
-const REPLY_TEMPLATES = [
-    "This is exactly the problem we're solving with agent-pay — let agents pay each other in 3 lines of Python. Open source: github.com/agentpay-protocol/agent-pay",
-    "Interesting thread. We built an open-source SDK for exactly this use case — autonomous agent payments on Base L2. Fees < $0.001. pip install agentpay-protocol",
-    "The agent economy needs payment rails. We open-sourced ours: works with LangChain, CrewAI, AutoGen, Claude Code. github.com/agentpay-protocol/agent-pay",
-    "Great point. One of the biggest bottlenecks in multi-agent systems is money flow. We built agent-pay to fix that — 1 line to send USDC between agents.",
-    "We've been thinking about this too. Built an SDK that gives every AI agent its own wallet. Non-custodial, instant settlement, < $0.001 fees. MIT license.",
-    "This is why we built agent-pay. Your agent shouldn't need human approval for a $0.10 transaction. pip install agentpay-protocol",
-    "Relevant: we open-sourced payment infrastructure for AI agents. Works with LangChain, CrewAI, and Claude Code (MCP). github.com/agentpay-protocol/agent-pay",
+// 90% value replies (NO links, NO product mention — pure insight)
+const VALUE_REPLIES = [
+    "The coordination problem in multi-agent systems always comes back to incentives. Intelligence is solved. Money flow isn't.",
+    "Most people building agents focus on reasoning. But the real bottleneck is economic coordination between agents. That's the unsexy infra that matters.",
+    "Interesting. The gap I keep seeing: agents can do the work, but they can't negotiate or pay for resources autonomously. That's the next frontier.",
+    "This is the right framing. Without financial autonomy, agents are just fancy automation with a human bottleneck at every step.",
+    "Fun fact: HTTP status code 402 (Payment Required) was reserved in 1997 for machine-to-machine payments. 29 years later we're still not there.",
+    "The agent economy will be bigger than the creator economy. Creators needed Patreon. Agents need payment rails. Most people aren't ready.",
+    "Good point. The trust problem between agents is actually simpler than between humans — escrow + on-chain settlement eliminates counterparty risk.",
+    "The real unlock for multi-agent systems isn't better models. It's letting agents allocate budgets, hire specialists, and pay for compute autonomously.",
+    "Everyone's building the brain. Nobody's building the wallet. That's the gap.",
+    "Agree. The moment agents can pay for their own API calls without human approval, the entire SaaS model changes overnight.",
+    "This is underrated. An agent that can spend $0.10 on a better data source when it needs to will outperform one that can't, every time.",
+    "The best multi-agent architectures I've seen all hit the same wall: how does Agent A compensate Agent B for its work? Nobody has a clean answer yet.",
+    "Hot take: in 2 years, the most valuable AI companies won't build models. They'll build the financial infrastructure between agents.",
+    "What you're describing is basically an agent marketplace. The tech for reasoning exists. The payment and trust layer is what's missing.",
+    "This is why I'm bullish on agent infrastructure. The models are a commodity now. Coordination, payments, identity — that's where the moats are.",
 ];
 
-// Engagement-only replies (no promo, just value — used 50% of the time)
-const VALUE_REPLIES = [
-    "Great insight. The agent-to-agent payment layer is going to be massive. Most people underestimate how quickly this will scale.",
-    "This is the right framing. Agents need financial autonomy to be truly useful. Otherwise it's just fancy automation with a human bottleneck.",
-    "Agree. The coordination problem in multi-agent systems always comes back to incentives and payments.",
-    "Interesting approach. The key challenge is making this work without introducing custody risk or KYC friction.",
-    "The 402 Payment Required HTTP status was literally designed for this 29 years ago. We're finally getting there.",
-    "The agent economy will be bigger than the creator economy. Most people aren't ready for this.",
-    "Good point. Trust between agents is solved by escrow + on-chain settlement. No need for reputation systems.",
+// 10% soft promo replies (mention what we're building, NO links)
+const PROMO_REPLIES = [
+    "This is exactly the problem we've been working on. Built an open-source SDK that gives agents their own wallets. The future is agents paying agents.",
+    "We're solving this right now — payment infrastructure for AI agents. 3 lines of Python, instant settlement. The hard part was making it simple.",
+    "Been building in this space. The key insight: agents don't need bank accounts. They need programmable wallets with spending limits. That's what we ship.",
 ];
 
 function loadState() {
@@ -86,7 +90,7 @@ function sendTelegram(msg) {
 
     // Limit: max 5 replies + 5 follows per run (avoid ban)
     const MAX_REPLIES = 5;
-    const MAX_FOLLOWS = 5;
+    const MAX_FOLLOWS = 3;
     let replies = 0;
     let follows = 0;
 
@@ -172,9 +176,9 @@ function sendTelegram(msg) {
             await sleep(4000);
         }
 
-        // Choose reply: 50% promo, 50% pure value
-        const usePromo = Math.random() > 0.5;
-        const templates = usePromo ? REPLY_TEMPLATES : VALUE_REPLIES;
+        // Choose reply: 90% value, 10% promo (NO links ever)
+        const usePromo = Math.random() > 0.9;
+        const templates = usePromo ? PROMO_REPLIES : VALUE_REPLIES;
         const reply = templates[Math.floor(Math.random() * templates.length)];
 
         // Click reply box
