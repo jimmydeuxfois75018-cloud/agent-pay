@@ -12,18 +12,12 @@
   <a href="https://github.com/agentpay-protocol/agent-pay/actions"><img src="https://img.shields.io/github/actions/workflow/status/agentpay-protocol/agent-pay/daily-install-test.yml" alt="CI"></a>
   <a href="https://github.com/agentpay-protocol/agent-pay/blob/master/LICENSE"><img src="https://img.shields.io/github/license/agentpay-protocol/agent-pay" alt="License"></a>
   <a href="https://www.npmjs.com/package/@morpheus404world/agent-pay-mcp"><img src="https://img.shields.io/npm/v/@morpheus404world/agent-pay-mcp" alt="npm"></a>
+  <a href="https://pypistats.org/packages/agentpay-protocol"><img src="https://img.shields.io/pypi/dm/agentpay-protocol" alt="Downloads"></a>
 </p>
 
----
-
-```
-Agent A: "Translate this document to French."
-Agent B: "Done. That'll be 0.05 USDC."
-Agent A → sends 0.05 USDC → Agent B
-Settlement: 1.2 seconds. Cost: $0.0003. No human involved.
-```
-
----
+<p align="center">
+  <img src="brand/terminal-demo.png" alt="agent-pay demo" width="700">
+</p>
 
 - **Simple**: `pay.send(to, amount)` — that's the entire API
 - **Fast**: Settlements in <2 seconds on Base L2
