@@ -113,7 +113,8 @@ function sendTelegram(msg) {
 
     for (const query of queries) {
         console.log('Searching: ' + query);
-        await page.goto(`https://x.com/search?q=${encodeURIComponent(query)}&src=typed_query&f=live`, {
+        // Use "Top" tab instead of "Latest" — gets tweets with actual engagement
+        await page.goto(`https://x.com/search?q=${encodeURIComponent(query)}&src=typed_query&f=top`, {
             timeout: 25000, waitUntil: 'domcontentloaded'
         }).catch(() => {});
         await sleep(8000);
@@ -202,8 +203,8 @@ function sendTelegram(msg) {
         // Skip tweets with <30 chars (too short to reply meaningfully)
         if (tweet.text.length < 30) continue;
 
-        // Skip completely dead tweets (0 engagement = nobody will see our reply)
-        if (tweet.engagement < 2) {
+        // Skip completely dead tweets
+        if (tweet.engagement < 1) {
             console.log('  SKIP (dead tweet): ' + tweet.text.substring(0, 50));
             continue;
         }
