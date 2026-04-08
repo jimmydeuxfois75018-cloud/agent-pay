@@ -35,30 +35,30 @@ const SEARCH_QUERIES = [
     'AI agent tool',
 ];
 
-// 90% value replies (NO links, NO product mention — pure insight)
+// 90% value replies — sounds like a real dev, not a bot. Direct, opinionated, short.
 const VALUE_REPLIES = [
-    "The coordination problem in multi-agent systems always comes back to incentives. Intelligence is solved. Money flow isn't.",
-    "Most people building agents focus on reasoning. But the real bottleneck is economic coordination between agents. That's the unsexy infra that matters.",
-    "Interesting. The gap I keep seeing: agents can do the work, but they can't negotiate or pay for resources autonomously. That's the next frontier.",
-    "This is the right framing. Without financial autonomy, agents are just fancy automation with a human bottleneck at every step.",
-    "Fun fact: HTTP status code 402 (Payment Required) was reserved in 1997 for machine-to-machine payments. 29 years later we're still not there.",
-    "The agent economy will be bigger than the creator economy. Creators needed Patreon. Agents need payment rails. Most people aren't ready.",
-    "Good point. The trust problem between agents is actually simpler than between humans — escrow + on-chain settlement eliminates counterparty risk.",
-    "The real unlock for multi-agent systems isn't better models. It's letting agents allocate budgets, hire specialists, and pay for compute autonomously.",
-    "Everyone's building the brain. Nobody's building the wallet. That's the gap.",
-    "Agree. The moment agents can pay for their own API calls without human approval, the entire SaaS model changes overnight.",
-    "This is underrated. An agent that can spend $0.10 on a better data source when it needs to will outperform one that can't, every time.",
-    "The best multi-agent architectures I've seen all hit the same wall: how does Agent A compensate Agent B for its work? Nobody has a clean answer yet.",
-    "Hot take: in 2 years, the most valuable AI companies won't build models. They'll build the financial infrastructure between agents.",
-    "What you're describing is basically an agent marketplace. The tech for reasoning exists. The payment and trust layer is what's missing.",
-    "This is why I'm bullish on agent infrastructure. The models are a commodity now. Coordination, payments, identity — that's where the moats are.",
+    "agents are smart but broke lol. intelligence is solved, money flow isnt",
+    "everyone builds the brain, nobody builds the wallet. thats the real gap right now",
+    "hot take: in 2 years the most valuable AI companies wont build models. theyll build infra between agents",
+    "this is so underrated. agents that can spend $0.10 on better data when they need to will crush agents that cant",
+    "the moment agents pay for their own API calls without asking permission, the entire SaaS model breaks",
+    "nobody talks about this but the coordination problem in multi-agent systems is always about money. who pays who for what",
+    "real talk: without financial autonomy agents are just fancy cron jobs with a human bottleneck",
+    "the agent economy is gonna be bigger than the creator economy. most people arent ready for that conversation",
+    "fun fact: HTTP 402 Payment Required was created in 1997 for machine payments. 29 years later were still not there lmao",
+    "this is the right framing. trust between agents is actually easier than between humans — just use escrow + on-chain settlement",
+    "the best multi-agent setups i've seen all hit the same wall: how does agent A pay agent B for its work",
+    "agree 100%. the models are a commodity now. coordination and payments — thats where the moats are",
+    "nah the real unlock isnt better reasoning. its letting agents hire other agents and pay them autonomously",
+    "this is exactly why agent infra is the play right now. everyone fighting over models while the plumbing is wide open",
+    "bro exactly. an agent that needs permission for every $0.10 expense is basically a fancy chatbot",
 ];
 
-// 10% soft promo replies (mention what we're building, NO links)
+// 10% soft promo — still sounds human, mentions what we build
 const PROMO_REPLIES = [
-    "This is exactly the problem we've been working on. Built an open-source SDK that gives agents their own wallets. The future is agents paying agents.",
-    "We're solving this right now — payment infrastructure for AI agents. 3 lines of Python, instant settlement. The hard part was making it simple.",
-    "Been building in this space. The key insight: agents don't need bank accounts. They need programmable wallets with spending limits. That's what we ship.",
+    "been building exactly this — open source SDK that gives agents their own wallets. 3 lines of python and theyre autonomous",
+    "we ship this. agents dont need bank accounts, they need programmable wallets with spending limits. thats the insight",
+    "working on this rn. payment infra for AI agents. the hard part wasnt the crypto, it was making it dead simple to integrate",
 ];
 
 function loadState() {
@@ -202,11 +202,12 @@ function sendTelegram(msg) {
         // Skip tweets with <30 chars (too short to reply meaningfully)
         if (tweet.text.length < 30) continue;
 
-        // Skip low-engagement tweets — only reply to tweets with traction
-        if (tweet.likes < 5 && tweet.replies < 3 && tweet.retweets < 2) {
-            console.log('  SKIP (low engagement): ' + tweet.text.substring(0, 50));
+        // Skip completely dead tweets (0 engagement = nobody will see our reply)
+        if (tweet.engagement < 2) {
+            console.log('  SKIP (dead tweet): ' + tweet.text.substring(0, 50));
             continue;
         }
+        console.log('  Engagement: ' + tweet.likes + ' likes, ' + tweet.replies + ' replies, ' + tweet.retweets + ' RTs');
 
         console.log('\n--- Tweet by ' + tweet.user + ' ---');
         console.log('  ' + tweet.text.substring(0, 100));
