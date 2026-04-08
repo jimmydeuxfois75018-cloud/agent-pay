@@ -88,9 +88,10 @@ function sendTelegram(msg) {
 (async () => {
     const state = loadState();
 
-    // Limit: max 5 replies + 5 follows per run (avoid ban)
-    const MAX_REPLIES = 5;
-    const MAX_FOLLOWS = 3;
+    // Limit per run — aggressive but safe
+    const MAX_REPLIES = 10;
+    const MAX_FOLLOWS = 5;
+    const QUERIES_PER_RUN = 3; // try multiple searches per run
     let replies = 0;
     let follows = 0;
 
@@ -105,67 +106,107 @@ function sendTelegram(msg) {
     const ctx = browser.contexts()[0];
     const page = await ctx.newPage();
 
-    // Pick a random search query
-    const query = SEARCH_QUERIES[Math.floor(Math.random() * SEARCH_QUERIES.length)];
-    console.log('Searching: ' + query);
+    // Run multiple queries per session
+    const shuffled = [...SEARCH_QUERIES].sort(() => Math.random() - 0.5);
+    const queries = shuffled.slice(0, QUERIES_PER_RUN);
+    let allTweets = [];
 
-    await page.goto(`https://x.com/search?q=${encodeURIComponent(query)}&src=typed_query&f=live`, {
-        timeout: 25000, waitUntil: 'domcontentloaded'
-    }).catch(() => {});
-    await sleep(8000);
+    for (const query of queries) {
+        console.log('Searching: ' + query);
+        await page.goto(`https://x.com/search?q=${encodeURIComponent(query)}&src=typed_query&f=live`, {
+            timeout: 25000, waitUntil: 'domcontentloaded'
+        }).catch(() => {});
+        await sleep(8000);
 
-    if (page.url().includes('login')) {
-        console.log('Not logged in. Exiting.');
-        await page.close();
-        return;
-    }
+        if (page.url().includes('login')) {
+            console.log('Not logged in. Exiting.');
+            await page.close();
+            return;
+        }
 
-    // Scroll multiple times to load tweets
-    for (let s = 0; s < 3; s++) {
-        await page.evaluate((offset) => window.scrollTo(0, offset), 500 + s * 800);
+        // Scroll multiple times to load tweets
+        for (let s = 0; s < 4; s++) {
+            await page.evaluate((offset) => window.scrollTo(0, offset), 500 + s * 800);
+            await sleep(2000);
+        }
+
+        // Get tweet elements
+        const tweets = await page.evaluate(() => {
+            const items = [];
+            document.querySelectorAll('article[data-testid="tweet"]').forEach(tweet => {
+                const textEl = tweet.querySelector('[data-testid="tweetText"]');
+                const userEl = tweet.querySelector('[data-testid="User-Name"]');
+                const linkEls = tweet.querySelectorAll('a[href*="/status/"]');
+
+                if (textEl && userEl) {
+                    let tweetUrl = '';
+                    for (const a of linkEls) {
+                        if (a.href.includes('/status/')) {
+                            tweetUrl = a.href;
+                            break;
+                        }
+                    }
+                    // Get engagement metrics
+                    let likes = 0, retweets = 0, tweetReplies = 0;
+                    tweet.querySelectorAll('[data-testid="like"], [data-testid="reply"], [data-testid="retweet"]').forEach(btn => {
+                        const num = parseInt(btn.textContent.replace(/[^0-9]/g, '')) || 0;
+                        const testid = btn.getAttribute('data-testid') || '';
+                        if (testid.includes('like')) likes = num;
+                        else if (testid.includes('reply')) tweetReplies = num;
+                        else if (testid.includes('retweet')) retweets = num;
+                    });
+                    // Also try aria-label for metrics
+                    tweet.querySelectorAll('[aria-label]').forEach(el => {
+                        const label = el.getAttribute('aria-label') || '';
+                        const likeMatch = label.match(/(\d+)\s*like/i);
+                        const replyMatch = label.match(/(\d+)\s*repl/i);
+                        const rtMatch = label.match(/(\d+)\s*repost/i);
+                        if (likeMatch) likes = Math.max(likes, parseInt(likeMatch[1]));
+                        if (replyMatch) tweetReplies = Math.max(tweetReplies, parseInt(replyMatch[1]));
+                        if (rtMatch) retweets = Math.max(retweets, parseInt(rtMatch[1]));
+                    });
+
+                    items.push({
+                        text: textEl.textContent.trim().substring(0, 200),
+                        user: userEl.textContent.trim().substring(0, 50),
+                        url: tweetUrl,
+                        id: tweetUrl.split('/status/')[1]?.split('?')[0] || '',
+                        likes: likes,
+                        replies: tweetReplies,
+                        retweets: retweets,
+                        engagement: likes + tweetReplies + retweets,
+                    });
+                }
+            });
+            return items;
+        });
+        console.log('  Found ' + tweets.length + ' tweets for "' + query + '"');
+        allTweets.push(...tweets);
         await sleep(2000);
     }
 
-    // Get tweet elements
-    const tweets = await page.evaluate(() => {
-        const items = [];
-        document.querySelectorAll('article[data-testid="tweet"]').forEach(tweet => {
-            const textEl = tweet.querySelector('[data-testid="tweetText"]');
-            const userEl = tweet.querySelector('[data-testid="User-Name"]');
-            const linkEls = tweet.querySelectorAll('a[href*="/status/"]');
+    // Deduplicate + sort by engagement (highest first)
+    const seen = new Set();
+    allTweets = allTweets
+        .filter(t => { if (seen.has(t.id)) return false; seen.add(t.id); return true; })
+        .sort((a, b) => (b.engagement || 0) - (a.engagement || 0));
+    console.log('Total unique tweets: ' + allTweets.length + ' (sorted by engagement)');
 
-            if (textEl && userEl) {
-                // Get tweet link
-                let tweetUrl = '';
-                for (const a of linkEls) {
-                    if (a.href.includes('/status/')) {
-                        tweetUrl = a.href;
-                        break;
-                    }
-                }
-
-                items.push({
-                    text: textEl.textContent.trim().substring(0, 200),
-                    user: userEl.textContent.trim().substring(0, 50),
-                    url: tweetUrl,
-                    id: tweetUrl.split('/status/')[1]?.split('?')[0] || '',
-                });
-            }
-        });
-        return items;
-    });
-
-    console.log('Found ' + tweets.length + ' tweets');
-
-    for (const tweet of tweets) {
+    for (const tweet of allTweets) {
         if (replies >= MAX_REPLIES) break;
         if (!tweet.id || state.replied_tweets.includes(tweet.id)) continue;
 
         // Skip our own tweets
         if (tweet.user.includes('agentpay')) continue;
 
-        // Skip tweets with <10 chars
-        if (tweet.text.length < 20) continue;
+        // Skip tweets with <30 chars (too short to reply meaningfully)
+        if (tweet.text.length < 30) continue;
+
+        // Skip low-engagement tweets — only reply to tweets with traction
+        if (tweet.likes < 5 && tweet.replies < 3 && tweet.retweets < 2) {
+            console.log('  SKIP (low engagement): ' + tweet.text.substring(0, 50));
+            continue;
+        }
 
         console.log('\n--- Tweet by ' + tweet.user + ' ---');
         console.log('  ' + tweet.text.substring(0, 100));
